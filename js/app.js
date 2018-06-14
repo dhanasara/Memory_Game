@@ -1,23 +1,28 @@
 /*
  * Create a list that holds all of your cards
  */
-var cardList = ['fa-diamond', 'fa-paper-plane-o', 'fa-anchor', 'fa-bolt', 'fa-cube', 'fa-anchor', 'fa-leaf', 'fa-bicycle', 'fa-diamond', 'fa-bomb', 'fa-leaf', 'fa-bomb', 'fa-bolt', 'fa-bicycle', 'fa-paper-plane-o', 'fa-cube'];
-var defaultCardList = ['fa-diamond', 'fa-paper-plane-o', 'fa-anchor', 'fa-bolt', 'fa-cube', 'fa-anchor', 'fa-leaf', 'fa-bicycle', 'fa-diamond', 'fa-bomb', 'fa-leaf', 'fa-bomb', 'fa-bolt', 'fa-bicycle', 'fa-paper-plane-o', 'fa-cube'];
+let cardList = ['fa-diamond', 'fa-paper-plane-o', 'fa-anchor', 'fa-bolt', 'fa-cube', 'fa-anchor', 'fa-leaf', 'fa-bicycle', 'fa-diamond', 'fa-bomb', 'fa-leaf', 'fa-bomb', 'fa-bolt', 'fa-bicycle', 'fa-paper-plane-o', 'fa-cube'];
+
+/** Global variables **/
 let firstCardClick = 0;
 let secondCardClick = 1;
-var flipCount = 0;
+let flipCount = 0;
 var firstCard, secondCard;
 var firstCardType, secondCardType;
-var seconds = 0;
-var minutes = 0;
-var success_element = $('.success-container');
-var score_message_element = $('.score-message');
-var moves = 0;
-var cards_match = 8;
-var cards_match_count = 0;
-var stars_count = 0;
+let seconds = 0;
+let minutes = 0;
+const success_element = $('.success-container');
+const score_message_element = $('.score-message');
+const duration_element = $('.duration');
+const cardDeckElement = document.querySelector('.deck');
+let moves = 0;
+let cards_match = 8;
+let cards_match_count = 0;
+let stars_count = 0;
 var timer_count;
 var timerText = "";
+let start_timer = false;
+
 
 /*
  * Display the cards on the page
@@ -53,35 +58,47 @@ function shuffle(array) {
  *    + if all cards have matched, display a message with the final score (put this functionality in another function that you call from this one)
  */
 
- // Function for the Card click event
-$('.card').click(function() {
-    startTimer();    
+// Function for the Card click event
+function startGame() {
+  cardDeckElement.addEventListener('click', function(e){
+  card = e.target;
+  // invoke the time counter once the user started to play the game. 
+  if (start_timer === false) {
+      startTimer(); 
+      start_timer = true;
+  }  
+
+  // Prevent the second click of the opened card.
+  if($(card).hasClass('open')) {
+    e.preventDefault();
+  } 
+  else {
     if(flipCount === firstCardClick) {
-        firstCard = $(this);
-        firstCardType = $(this).find('i').attr('class');
-        $(this).addClass('open show');
-        flipCount += 1;
+      firstCard = $(card);
+      firstCardType = $(card).find('i').attr('class');
+      $(card).addClass('open show');          
+      flipCount += 1;
     } else if(flipCount === secondCardClick) {
-        secondCard = $(this);
-        secondCardType = $(this).find('i').attr('class');
-        $(this).addClass('open show');
+        secondCard = $(card);
+        secondCardType = $(card).find('i').attr('class');
+        $(card).addClass('open show');
         flipCount = 0;
         if(firstCardType === secondCardType) {
-            cardMatchTrue(firstCard, secondCard);
+           cardMatchTrue(firstCard, secondCard);
             if(cards_match_count === cards_match) {
               setTimeout(function(){
                 endGame();
               },1000);              
-            }
-        } else {
-            cardMatchFalse(firstCard, secondCard);
-        }
-        
+            } 
+      } else {
+          cardMatchFalse(firstCard, secondCard);
+      }
     }
-  
-});
+  }    
+ });
+}
 
-// Function for Cards Match
+/** Function for Cards Match **/
 function cardMatchTrue(firstCard, secondCard) {
     firstCard.addClass('match');
     secondCard.addClass('match');
@@ -90,7 +107,7 @@ function cardMatchTrue(firstCard, secondCard) {
     updateMoves(moves);
 }
 
-// Function for Cards Match Fail
+/** Function for Cards Match Fail **/
 function cardMatchFalse(firstCard, secondCard) {
     firstCard.addClass('no-match');
     secondCard.addClass('no-match');
@@ -99,7 +116,7 @@ function cardMatchFalse(firstCard, secondCard) {
     resetCard(firstCard, secondCard);
 }
 
-// Function for Card Flips when cards match fail
+/** Function for Card Flips when cards match fail **/
 function resetCard(firstCard, secondCard) {
       setTimeout(function(){
             firstCard.removeClass('open show no-match');
@@ -107,54 +124,79 @@ function resetCard(firstCard, secondCard) {
       },1000);
 };
 
-// Function to shuffle cards randomly
+/** Function to shuffle cards randomly **/
 function shuffleCards() {
-    var shuffledCards = shuffle(cardList);
-    var cardElements = document.querySelectorAll('li.card i.fa');
-    console.log(cardElements);
-  for (let j = 0; j < cardList.length; j++) {        
-         $('#card_'+ j).removeClass(defaultCardList[j]).addClass(shuffledCards[j]);      
-    }
+  createCardDeck();
+  let shuffledCards = shuffle(cardList);
+  let cardElements = document.querySelectorAll('li.card i.fa');
+  for (let j = 0; j < cardList.length; j++) {
+    cardElements[j].classList.add(shuffledCards[j]);
+  }
+}
 
+/** Function to Create list of cards in the card deck **/
+function createCardDeck() {
+  for(let i = 0; i < cardList.length; i++) {
+    listElement = document.createElement('li');
+    listElement.className = 'card';
+    cardDeckElement.appendChild(listElement);
+
+    cardElement = document.createElement('i');
+    cardElement.className = 'fa';
+    listElement.appendChild(cardElement);
+  }  
+}
+
+/** Function to empty the card deck **/
+function resetCardDeck () {
+  while(cardDeckElement.hasChildNodes()) {
+    cardDeckElement.removeChild(cardDeckElement.lastChild);
+  }
 }
 
 // Invoke shuffle cards once the page rendered.
 $(document).ready(function () {
     shuffleCards();
+    startGame();
 
 });
 
 // Restart click event
-$('.fa fa-repeat').click(function() {
+$('.fa-repeat').click(function() {
       restartGame();
-    });
+  });
 
-// Function to Restart Game
-function restartGame() {      
-  // Reset the card deck.
-  $('.card').removeClass('open');
-  $('.card').removeClass('show');
-  $('.card').removeClass('match');
-  $('.card').removeClass('no-match');
-  moves_taken = 0;
-
+/** Function to Restart Game **/
+function restartGame() {   
   /** Clear Timer */
   clearInterval(timer_count);
+  seconds = 0;
+  minutes = 0;
 
-  timer_start = false;
+  start_timer = false;
+  $('.fa-timer').text("0m:0s");
+
+  // Reset the card deck.
+  resetCardDeck();
+
+  /** Reset Cards Match Count **/
+  cards_match_count = 0
 
   /** Reset Moves Counter */
-  moves_counter = 0;
-  $('.score-panel').find('.moves').text(moves_counter);
+  moves_taken = 0;
+  moves = 0;
+  $('.score-panel').find('.moves').text(moves);
 
   /** Reset Star Rating */
-  $('#first-star').removeClass('fa-star-o').addClass('fa-star');
-  $('#second-star').removeClass('fa-star-o').addClass('fa-star');
-  $('#third-star').removeClass('fa-star-o').addClass('fa-star');
-
+  $('#starOne').removeClass('fa-star-o').addClass('fa-star');  
+  $('#starTwo').removeClass('fa-star-o').addClass('fa-star');  
+  $('#starThree').removeClass('fa-star-o').addClass('fa-star');
+  
   // Shuffle Cards
-  shuffleCards();      
-};
+  shuffleCards();
+  // Initiate the start game event  
+  startGame();    
+}
 
 
 // Function to Start Timer
@@ -165,27 +207,24 @@ function startTimer() {
             minutes += 1;
             seconds = 0;
         }   
-        //console.log(timer_count);
       timerText = minutes + "m" + ":" + seconds + "s";
     $('.fa-timer').text(timerText);
-    //document.getElementsByClassName("fa-timer").innerHTML = minutes + "m" + ":" + seconds + "s";  
-    
     }, 1000);
 }
 
-// Function to Update the no.of card flips.
+// Function to Update the no.of card flips and the Performance rating.
 function updateMoves(moves) {
     if(moves > 0 ) {
         $('.score-panel').find('.moves').text(moves);
     }
-    if (moves > 15 && moves <= 25){
-         $('#starThree').removeClass('fa-star').addClass('fa-star-o');  
-         stars_count = 3;     
-    } else if(moves > 25 && moves <=40){
+    // update stars as 3, when the moves less than or equal to 15
+    if (moves <= 15){
+       stars_count = 3;     
+    } else if(moves > 15 && moves <=25){ // update stars as 2, when the moves less than or equal to 25
+       $('#starThree').removeClass('fa-star').addClass('fa-star-o');         
+       stars_count = 2;
+    } else if(moves > 25){ // update stars as 1, when the moves greater than 25
          $('#starTwo').removeClass('fa-star').addClass('fa-star-o');
-         stars_count = 2;
-    } else if(moves > 40){
-         $('#starOne').removeClass('fa-star').addClass('fa-star-o');
          stars_count = 1;
     }
 }
@@ -193,17 +232,14 @@ function updateMoves(moves) {
 // Function to Game Completion
 function endGame() {
     success_element.css('display','block');
-    score_message_element.text("With " + flipCount + "Moves and " + stars_count + "Stars");
-    
+    score_message_element.text("With " + moves + " Moves and " + stars_count + " Stars");
+    duration_element.text("Time Taken: " +  timerText);
 }
 
 // Function to Restart Game after the successful completion of previous game.
 $('.btn-play-again').click(function() {
+  clearInterval(timer_count);
   restartGame();
-  moves = 0;
-  $('#starOne').removeClass('fa-star-o').addClass('fa-star');  
-  $('#starTwo').removeClass('fa-star-o').addClass('fa-star');  
-  $('#starThree').removeClass('fa-star-o').addClass('fa-star');  
-  $('.fa-timer').text("0m:0s");
+  moves = 0;  
   success_element.css('display', 'none');
 });

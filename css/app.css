@@ -133,7 +133,14 @@ h1 {
 .success-message {
   text-align: center;
   font-weight: bold;
-  font-size: 32px;
+  font-size: 32px;  
+  font-family: 'Open Sans', sans-serif;
+}
+
+.score-message, .winning-expression, .duration {
+  text-align: center;  
+  font-size: 16px;  
+  font-family: 'Open Sans', sans-serif;
 }
 
 .btn-play-again {
