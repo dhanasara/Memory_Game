@@ -4,24 +4,24 @@
 let cardList = ['fa-diamond', 'fa-paper-plane-o', 'fa-anchor', 'fa-bolt', 'fa-cube', 'fa-anchor', 'fa-leaf', 'fa-bicycle', 'fa-diamond', 'fa-bomb', 'fa-leaf', 'fa-bomb', 'fa-bolt', 'fa-bicycle', 'fa-paper-plane-o', 'fa-cube'];
 
 /** Global variables **/
-let firstCardClick = 0;
-let secondCardClick = 1;
 let flipCount = 0;
-var firstCard, secondCard;
-var firstCardType, secondCardType;
 let seconds = 0;
 let minutes = 0;
-const success_element = $('.success-container');
-const score_message_element = $('.score-message');
-const duration_element = $('.duration');
-const cardDeckElement = document.querySelector('.deck');
 let moves = 0;
 let cards_match = 8;
 let cards_match_count = 0;
 let stars_count = 0;
+let start_timer = false;
+var firstCard, secondCard;
+var firstCardType, secondCardType, card;
 var timer_count;
 var timerText = "";
-let start_timer = false;
+const firstCardClick = 0;
+const secondCardClick = 1;
+const success_element = $('.success-container');
+const score_message_element = $('.score-message');
+const duration_element = $('.duration');
+const cardDeckElement = document.querySelector('.deck');
 
 
 /*
@@ -154,7 +154,7 @@ function resetCardDeck () {
   }
 }
 
-// Invoke shuffle cards once the page rendered.
+// Invoke shuffle cards and the game start events once the page got rendered.
 $(document).ready(function () {
     shuffleCards();
     startGame();
@@ -182,8 +182,10 @@ function restartGame() {
   /** Reset Cards Match Count **/
   cards_match_count = 0
 
+  /** Reset previous open card flipCount **/
+  flipCount = 0;
+
   /** Reset Moves Counter */
-  moves_taken = 0;
   moves = 0;
   $('.score-panel').find('.moves').text(moves);
 
